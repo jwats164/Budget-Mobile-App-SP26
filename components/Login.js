@@ -35,7 +35,7 @@ const Login = ({ navigation }) => {
       } else {
         alert('No users found in the database');
       }
-
+      
     } catch (error) {
       console.error('Error logging in:', error);
       alert('An error occurred during login.');

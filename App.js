@@ -8,7 +8,7 @@ import { getDatabase } from "firebase/database";  // Import Firebase Database
 import FaceId from './components/FaceId';
 import Login from './components/Login';
 import SignUp from './components/SignUp';
-
+import HomeScreen from './components/HomeScreen';
 const Stack = createStackNavigator();
 const WelcomeScreen = ({ navigation }) => {
   return (
@@ -32,33 +32,6 @@ const WelcomeScreen = ({ navigation }) => {
     </View>
   );
 };
-// Home Screen component
-const HomeScreen = ({ navigation }) => {
-  return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Welcome to Better Budgeting</Text>
-      
-      {/* Login Button */}
-      <TouchableOpacity onPress={() => navigation.navigate('Login')} style={styles.button}>
-        <Text style={styles.buttonText}>Login</Text>
-      </TouchableOpacity>
-      
-      {/* Sign Up Button */}
-      <TouchableOpacity onPress={() => navigation.navigate('SignUp')} style={styles.button}>
-        <Text style={styles.buttonText}>Sign Up</Text>
-      </TouchableOpacity>
-
-      {/* Face ID Button as Image */}
-      <TouchableOpacity onPress={() => navigation.navigate('FaceId')} style={styles.imageButton}>
-        <Image
-          source={require('./assets/FaceID.png')}  // Ensure the path is correct
-          style={styles.image}
-        />
-      </TouchableOpacity>
-    </View>
-  );
-};
-
 // Firebase configuration
 const firebaseConfig = {
   apiKey: "AIzaSyB-Cy1jd5fPTXxZcjqtP4BgmVFr-EdDYko",
@@ -78,16 +51,16 @@ const database = getDatabase(app);
 export default function App() {
   return (
     <NavigationContainer>
-      <Stack.Navigator initialRouteName="Home">
+      <Stack.Navigator initialRouteName="Welcome">
         <Stack.Screen name="Welcome" component={WelcomeScreen} />
         <Stack.Screen name="Login" component={Login} />
         <Stack.Screen name="SignUp" component={SignUp} />
         <Stack.Screen name="FaceId" component={FaceId} />
         <Stack.Screen name="Home" component={HomeScreen} />
-         <Stack.Screen name="Graphs" component={GraphsScreen} />
-        <Stack.Screen name="Manual" component={ManualInput} /> 
+         {/* <Stack.Screen name="Graphs" component={GraphsScreen} />
+         <Stack.Screen name="Manual" component={ManualInput} /> 
          <Stack.Screen name="Settings" component={Settings} /> 
-         <Stack.Screen name="Update" component={UpdateInfo} /> 
+         <Stack.Screen name="Update" component={UpdateInfo} />  */}
       </Stack.Navigator>
     </NavigationContainer>
   );
