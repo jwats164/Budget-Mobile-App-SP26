@@ -16,44 +16,47 @@ const SignUp = ({ navigation }) => {
         alert("Passwords don't match!");
         return;
       }
-
+  
       // Ensure password length
       if (password.length < 7) {
         alert('Password must be at least 7 characters long.');
         return;
       }
-
+  
       // Fetch the last user ID from the database
       const usersRef = ref(database, 'users');
       const snapshot = await get(usersRef);
       let newUserId = 1;
-
+  
       if (snapshot.exists()) {
         const usersData = snapshot.val();
-        // Find the max existing user ID and increment it for the new user
         const userIds = Object.keys(usersData).map(id => parseInt(id));
         newUserId = Math.max(...userIds) + 1;
       }
-
-      // Create a new user object
+  
+      // Create a new user object with income, expenses, and savings set to 0
       const newUser = {
         id: newUserId,
         username: username,
         email: email,
-        password: password // In a real app, hash the password before saving
+        password: password, // In a real app, hash the password before saving
+        income: 0,
+        expenses:0,
+        savings: 0,
       };
-
+  
       // Save the new user in the database
       await set(ref(database, 'users/' + newUserId), newUser);
-
+  
       alert('User registered successfully!');
-      navigation.navigate('Login');  // Navigate to Login after successful signup
-
+      navigation.navigate('Login'); // Navigate to Login after successful signup
+  
     } catch (error) {
       console.error('Error signing up:', error);
-      alert(error.message);  // Display error message
+      alert(error.message);
     }
   };
+  
 
   return (
     <View style={styles.container}>

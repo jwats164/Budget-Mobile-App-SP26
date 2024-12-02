@@ -1,8 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import { ref, set, get, child, getDatabase, onValue } from 'firebase/database';
-import { getAuth } from 'firebase/auth';
+import React, { useState, useContext, useEffect } from 'react';
+import { View, Text, TextInput, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { ref, update, get, getDatabase } from 'firebase/database';
+import { UserContext } from './UserContext';
 import CategoryDropdown from './CategoryDropdown';
 
 const HomeScreen = () => {
@@ -10,73 +9,64 @@ const HomeScreen = () => {
   const [expense, setExpense] = useState('');
   const [category, setCategory] = useState(null);
   const [data, setData] = useState({ incomes: [0], expenses: [0], categories: [] });
-  const navigation = useNavigation();
+  const { user } = useContext(UserContext);
   const database = getDatabase();
-  const auth = getAuth();
 
-  // Fetch current user from Firebase Authentication
-  const user = auth.currentUser;
-  
   useEffect(() => {
     if (user) {
-      // Fetch saved data from the database on component mount
-      const userRef = ref(database, 'users/' + user.uid);
-      onValue(userRef, (snapshot) => {
-        const userData = snapshot.val();
-        if (userData) {
-          setData(userData);
-        }
-      });
-    } else {
-      // If no user is logged in, redirect to login screen
-      navigation.navigate('Login');
+      fetchUserData();
     }
-  }, [user, database, navigation]);
+  }, [user]);
 
-  // Save data to Firebase Realtime Database for the logged-in user
-  const saveDataToFirebase = () => {
-    if (user) {
-      const userRef = ref(database, 'users/' + user.uid);
-      set(userRef, {
-        incomes: data.incomes,
-        expenses: data.expenses,
-        categories: data.categories,
-      })
-      .then(() => {
-        Alert.alert('Data saved successfully!');
-      })
-      .catch((error) => {
-        console.error('Error saving data:', error);
-        Alert.alert('Failed to save data!');
-      });
+  const fetchUserData = async () => {
+    try {
+      const snapshot = await get(ref(database, `users/${user.id}`));
+      if (snapshot.exists()) {
+        const userData = snapshot.val();
+        setData({
+          incomes: [userData.income || 0],
+          expenses: [userData.expenses || 0],
+          categories: userData.categories || [],
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching user data:', error);
     }
   };
 
-  const handleAddIncome = () => {
+  const handleAddIncome = async () => {
     if (income) {
-      setData(prevData => {
-        const updatedData = {
-          ...prevData,
-          incomes: [...prevData.incomes, parseFloat(income)],
-        };
-        saveDataToFirebase(); // Save to Firebase whenever data changes
-        return updatedData;
+      const newIncome = parseFloat(income);
+      setData(prevData => ({
+        ...prevData,
+        incomes: [...prevData.incomes, newIncome],
+      }));
+
+      // Update Firebase
+      await update(ref(database, `users/${user.id}`), {
+        income: getTotal(data.incomes) + newIncome,
+        savings: getTotal(data.incomes) + newIncome - getTotal(data.expenses),
       });
+
       setIncome('');
     }
   };
 
-  const handleAddExpense = () => {
+  const handleAddExpense = async () => {
     if (expense && category) {
-      setData(prevData => {
-        const updatedData = {
-          ...prevData,
-          expenses: [...prevData.expenses, parseFloat(expense)],
-          categories: [...prevData.categories, category],
-        };
-        saveDataToFirebase(); // Save to Firebase whenever data changes
-        return updatedData;
+      const newExpense = parseFloat(expense);
+      setData(prevData => ({
+        ...prevData,
+        expenses: [...prevData.expenses, newExpense],
+        categories: [...prevData.categories, category],
+      }));
+
+      // Update Firebase
+      await update(ref(database, `users/${user.id}`), {
+        expenses: getTotal(data.expenses) + newExpense,
+        savings: getTotal(data.incomes) - (getTotal(data.expenses) + newExpense),
       });
+
       setExpense('');
       setCategory(null);
     }
@@ -87,11 +77,11 @@ const HomeScreen = () => {
   return (
     <ScrollView style={styles.container} keyboardShouldPersistTaps="handled">
       <View style={styles.headerContainer}>
-        <Text style={styles.header}>Home Screen</Text>
+        <Text style={styles.header}>Funds</Text>
       </View>
 
       <TextInput
-        placeholder="Enter Income"
+        placeholder="Enter Monthly Income Amount"
         keyboardType="numeric"
         value={income}
         onChangeText={setIncome}
@@ -102,7 +92,7 @@ const HomeScreen = () => {
       </TouchableOpacity>
 
       <TextInput
-        placeholder="Enter Expense"
+        placeholder="Enter Monthly Expense Amount"
         keyboardType="numeric"
         value={expense}
         onChangeText={setExpense}
@@ -115,6 +105,7 @@ const HomeScreen = () => {
         <Text style={styles.buttonText}>Add Expense</Text>
       </TouchableOpacity>
 
+      {/* Updated to display dynamic data from Firebase */}
       <Text style={styles.summary}>Total Income: ${getTotal(data.incomes)}</Text>
       <Text style={styles.summary}>Total Expenses: ${getTotal(data.expenses)}</Text>
       <Text style={styles.summary}>Savings: ${getTotal(data.incomes) - getTotal(data.expenses)}</Text>

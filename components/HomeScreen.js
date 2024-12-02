@@ -1,14 +1,16 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { UserContext } from './UserContext'; // Import UserContext
 
 const HomeScreen = () => {
   const navigation = useNavigation();
+  const { user } = useContext(UserContext); // Access the logged-in user
 
   return (
     <View style={styles.container}>
       <View style={styles.headerContainer}>
-        <Text style={styles.header}>   </Text>
+        <Text style={styles.header}>Welcome, {user?.username || 'Guest'}!</Text>
         <TouchableOpacity onPress={() => navigation.navigate('Settings')} style={styles.settingsButton}>
           <Image
             source={require('../assets/SettingsIcon.png')} // Ensure the path is correct
@@ -39,7 +41,7 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 16,
     justifyContent: 'center',
-    backgroundColor: '#f5f5f5',  // Light background for a clean look
+    backgroundColor: '#f5f5f5',
   },
   headerContainer: {
     flexDirection: 'row',
@@ -50,7 +52,7 @@ const styles = StyleSheet.create({
   header: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#333',  // Darker color for the header text
+    color: '#333',
   },
   settingsButton: {
     padding: 10,
@@ -65,11 +67,11 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     alignItems: 'center',
     marginVertical: 10,
-    shadowColor: '#000',  // Adding shadow for button elevation
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.3,
     shadowRadius: 3,
-    elevation: 5,  // For Android shadow
+    elevation: 5,
   },
   buttonText: {
     color: '#fff',

@@ -1,72 +1,70 @@
-import React from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { View, Text, StyleSheet, Dimensions, ScrollView } from 'react-native';
 import { PieChart, BarChart } from 'react-native-chart-kit';
+import { ref, get, getDatabase } from 'firebase/database';
+import { UserContext } from './UserContext';
 
 const screenWidth = Dimensions.get('window').width;
 
-const GraphsScreen = ({ route }) => {
-  // Provide default data if route.params or data is undefined
-  const data = route?.params?.data || { incomes: [0], expenses: [0], categories: ['No Category'] };
+const GraphsScreen = () => {
+  const { user } = useContext(UserContext); // Access the logged-in user's data
+  const [data, setData] = useState({ incomes: [0], expenses: [0], categories: [] });
+  const database = getDatabase();
 
-  // Handle empty data arrays and default to 0 if there's no data
-  const defaultIncome = data.incomes.length === 0 ? [0] : data.incomes;
-  const defaultExpenses = data.expenses.length === 0 ? [0] : data.expenses;
-  const defaultCategories = data.categories.length === 0 ? ['No Category'] : data.categories;
+  useEffect(() => {
+    if (user) {
+      fetchData();
+    }
+  }, [user]);
 
-  // Calculate totals for each category
-  const categoryTotals = defaultCategories.reduce((acc, category, index) => {
-    acc[category] = acc[category] ? acc[category] + defaultExpenses[index] : defaultExpenses[index];
-    return acc;
-  }, {});
+  const fetchData = async () => {
+    try {
+      const userRef = ref(database, `users/${user.id}`);
+      const snapshot = await get(userRef);
 
-  // Pie Data for Spending by Category
-  const pieData = Object.keys(categoryTotals).map(key => ({
-    name: key,
-    amount: categoryTotals[key],
-    color: getRandomColor(),
-    legendFontColor: '#7F7F7F',
-    legendFontSize: 15,
-  }));
-
-  // Calculate total income and total spending
-  const totalIncome = defaultIncome.reduce((total, num) => total + num, 0);
-  const totalSpending = defaultExpenses.reduce((total, num) => total + num, 0);
-  const totalSavings = totalIncome - totalSpending;
-
-  // Bar Data for Income, Spending, and Savings
-  const barData = {
-    labels: ['Income', 'Spending', 'Savings'],
-    datasets: [
-      {
-        data: [totalIncome, totalSpending, totalSavings],
-      },
-    ],
+      if (snapshot.exists()) {
+        const userData = snapshot.val();
+        setData({
+          incomes: [userData.income || 0],
+          expenses: [userData.expenses || 0],
+          categories: userData.categories || ['No Category'],
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching user data:', error);
+    }
   };
 
-  // Pie Data for Wants (Entertainment) vs Needs (Transportation, Food, Housing, Utilities)
-  const wantsTotal = categoryTotals['Entertainment'] || 0;
-  const needsTotal =
-    (categoryTotals['Transportation'] || 0) +
-    (categoryTotals['Food'] || 0) +
-    (categoryTotals['Housing'] || 0) +
-    (categoryTotals['Utilities'] || 0);
+  const totalIncome = data.incomes.reduce((total, num) => total + num, 0);
+  const totalExpenses = data.expenses.reduce((total, num) => total + num, 0);
+  const totalSavings = totalIncome - totalExpenses;
 
-  const wantsVsNeedsData = [
+  // Pie chart data including expenses and savings
+  const pieData = [
     {
-      name: 'Wants (Entertainment)',
-      amount: wantsTotal,
-      color: '#FF6347', // Red for wants
+      name: 'Expenses',
+      amount: totalExpenses,
+      color: '#FF4500',
       legendFontColor: '#7F7F7F',
       legendFontSize: 15,
     },
     {
-      name: 'Needs (Transportation, Food, Housing, Utilities)',
-      amount: needsTotal,
-      color: '#32CD32', // Green for needs
+      name: 'Savings',
+      amount: totalSavings,
+      color: '#32CD32',
       legendFontColor: '#7F7F7F',
       legendFontSize: 15,
     },
   ];
+
+  const barData = {
+    labels: ['Income', 'Spending', 'Savings'],
+    datasets: [
+      {
+        data: [totalIncome, totalExpenses, totalSavings],
+      },
+    ],
+  };
 
   function getRandomColor() {
     return `#${Math.floor(Math.random() * 16777215).toString(16)}`;
@@ -74,9 +72,9 @@ const GraphsScreen = ({ route }) => {
 
   return (
     <ScrollView style={styles.container}>
-      <Text style={styles.header}>Spending by Category</Text>
+      <Text style={styles.header}>Income vs Expenses</Text>
       <PieChart
-        data={pieData.length > 0 ? pieData : [{ name: 'No Data', amount: 0, color: '#ccc', legendFontColor: '#7F7F7F', legendFontSize: 15 }]}
+        data={pieData}
         width={screenWidth - 16}
         height={220}
         chartConfig={chartConfig}
@@ -92,18 +90,7 @@ const GraphsScreen = ({ route }) => {
         width={screenWidth - 16}
         height={220}
         chartConfig={chartConfig}
-      />
-
-      <Text style={styles.header}>Wants vs Needs</Text>
-      <PieChart
-        data={wantsVsNeedsData.length > 0 ? wantsVsNeedsData : [{ name: 'No Data', amount: 0, color: '#ccc', legendFontColor: '#7F7F7F', legendFontSize: 15 }]}
-        width={screenWidth - 16}
-        height={220}
-        chartConfig={chartConfig}
-        accessor="amount"
-        backgroundColor="transparent"
-        paddingLeft="15"
-        absolute
+        fromZero // Ensures the bar chart starts at zero
       />
     </ScrollView>
   );
@@ -115,6 +102,8 @@ const chartConfig = {
   color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
   strokeWidth: 2,
   decimalPlaces: 2,
+  barPercentage: 0.5,
+  fromZero: true, // Ensures the bar graph starts at 0
 };
 
 const styles = StyleSheet.create({

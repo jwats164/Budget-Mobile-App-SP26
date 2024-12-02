@@ -1,14 +1,41 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { View, Text, TextInput, Button, StyleSheet } from 'react-native';
+import { ref, update, getDatabase } from 'firebase/database';
+import { UserContext } from './UserContext';
+import { useNavigation } from '@react-navigation/native';
 
 const UpdateInfo = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const { user, setUser } = useContext(UserContext); // Access current user and update function
+  const database = getDatabase();
+  const nav = useNavigation(); 
 
-  const handleUpdate = () => {
-    // Logic to update email and password in your database
-    console.log('Email:', email, 'Password:', password);
-    // Add success feedback or error handling here
+  const handleUpdate = async () => {
+    try {
+      if (password.length < 7) {
+        alert('Password must be at least 7 characters long.');
+        return;
+      }
+
+      // Reference to the current user's data in the database
+      const userRef = ref(database, `users/${user.id}`);
+
+      // Update the user's email and password
+      await update(userRef, {
+        email: email || user.email, // Retain the old value if no new value is provided
+        password: password || user.password, // Retain the old value if no new value is provided
+      });
+
+      // Update the user context with the new values
+      setUser({ ...user, email: email || user.email, password: password || user.password });
+      nav.navigate('Login');
+
+      alert('Information updated successfully!');
+    } catch (error) {
+      console.error('Error updating information:', error);
+      alert('An error occurred while updating your information.');
+    }
   };
 
   return (
