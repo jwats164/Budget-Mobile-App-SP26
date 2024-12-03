@@ -2,8 +2,8 @@
 #### [About](about.md) 
 #### [Design](Design.md)
 
-## [Video](https://share.descript.com/view/OK2E8kePFBx)
-## [Final Report](https://kennesawedu-my.sharepoint.com/:w:/r/personal/jwats164_students_kennesaw_edu/Documents/Final%20report.docx?d=w86624d000a3948439ec5d47713896010&csf=1&web=1&e=uXPEe0) 
+## [Video Link](https://share.descript.com/view/OK2E8kePFBx)
+## [Final Report Link](https://kennesawedu-my.sharepoint.com/:w:/r/personal/jwats164_students_kennesaw_edu/Documents/Final%20report.docx?d=w86624d000a3948439ec5d47713896010&csf=1&web=1&e=uXPEe0) 
 
 ## Overview
 
