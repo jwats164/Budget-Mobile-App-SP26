@@ -2,12 +2,14 @@
 #### [About](about.md) 
 #### [Design](Design.md)
 
-## [Video Link](https://share.descript.com/view/OK2E8kePFBx)
-## [Final Report Link](https://kennesawedu-my.sharepoint.com/:w:/r/personal/jwats164_students_kennesaw_edu/Documents/Final%20report.docx?d=w86624d000a3948439ec5d47713896010&csf=1&web=1&e=uXPEe0) 
-
 ## Overview
 
 **The Budget Mobile App** is a mobile application designed as part of a senior project at Kennesaw State University. The app helps users manage their finances by tracking income, expenses, and providing budgeting tools to help users achieve their financial goals.
+
+## [Video Link](https://share.descript.com/view/OK2E8kePFBx)
+## [Final Report Link](https://kennesawedu-my.sharepoint.com/:w:/r/personal/jwats164_students_kennesaw_edu/Documents/Final%20report.docx?d=w86624d000a3948439ec5d47713896010&csf=1&web=1&e=uXPEe0) 
+
+
 
 ## Features
 
